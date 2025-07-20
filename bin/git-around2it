@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -o errexit
+set -o pipefail
+set -o nounset
+shopt -s lastpipe
+main () {
+    this_branch="$(git symbolic-ref HEAD)"
+    if [[ "${this_branch}" == *-git-around2it-* ]] ; then
+        echo "git-around2it: not running in a git-around2it branch" >&2
+        exit 1
+    fi
+    timestamp="$(date +%s)"
+    pid="$$"
+    branch_name="${this_branch}-git-around2it-${timestamp}-${pid}"
+    git checkout -b "${branch_name}"
+    git add --all
+    git commit -m "put off some work aside using git-around2it"
+    git push -u origin "${branch_name}"
+    git checkout -
+}
+main "$@"
