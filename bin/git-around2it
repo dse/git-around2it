@@ -19,7 +19,7 @@ main () {
     new_branch_name="${branch_name}-git-around2it-${timestamp}-${pid}"
 
     at_exit () {
-        git checkout "${where_am_i}"
+        git checkout "${branch_name}"
     }
     trap at_exit EXIT
 
@@ -27,6 +27,5 @@ main () {
     git add --all
     git commit -m "put off some work aside using git-around2it"
     git push -u origin "${new_branch_name}"
-    git checkout -
 }
 main "$@"
