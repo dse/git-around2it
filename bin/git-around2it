@@ -4,18 +4,23 @@ set -o pipefail
 set -o nounset
 shopt -s lastpipe
 main () {
-    this_branch="$(git symbolic-ref HEAD)"
-    if [[ "${this_branch}" == *-git-around2it-* ]] ; then
+    where_am_i="$(git symbolic-ref HEAD)"
+    branch_name="${where_am_i#refs/heads/}"
+    if [[ "${branch_name}" = "${where_am_i}" ]] ; then
+        echo "git-around2it: unexpected symbolic ref name: ${where_am_i}"
+        exit 1
+    fi
+    if [[ "${branch_name}" == *-git-around2it-* ]] ; then
         echo "git-around2it: not running in a git-around2it branch" >&2
         exit 1
     fi
     timestamp="$(date +%s)"
     pid="$$"
-    branch_name="${this_branch}-git-around2it-${timestamp}-${pid}"
-    git checkout -b "${branch_name}"
+    new_branch_name="${branch_name}-git-around2it-${timestamp}-${pid}"
+    git checkout -b "${new_branch_name}"
     git add --all
     git commit -m "put off some work aside using git-around2it"
-    git push -u origin "${branch_name}"
+    git push -u origin "${new_branch_name}"
     git checkout -
 }
 main "$@"
