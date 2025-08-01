@@ -24,7 +24,12 @@ main () {
     trap at_exit EXIT
 
     git checkout -b "${new_branch_name}"
-    git add --all
+
+    if (( $# < 1 )) ; then
+        git add --all
+    else
+        git add "$@"
+    fi
     git commit -m "put off some work aside using git-around2it"
     git push -u origin "${new_branch_name}"
 }
