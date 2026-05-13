@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -o errexit
+set -o pipefail
+set -o nounset
+shopt -s lastpipe
+main () {
+    root="$(command git rev-parse --show-toplevel)"
+    cd "${root}"
+
+    repo_name="$(basename "$PWD")"
+
+    # <branch name> or <commit id>
+    ref_name="$(git symbolic-ref HEAD --short -q || git rev-parse --short HEAD)"
+
+    shopt -s extglob
+    ref_name="${ref_name//+(-)/-}"
+
+    declare -a files
+    git ls-files --others --exclude-standard | readarray -t files
+
+    if (( !${#files[@]} )) ; then
+        echo "git-hoard: No untracked files; exiting."
+        exit 0
+    fi
+
+    timestamp="$(date +%s%N)"
+    timestamp="${timestamp:0:-6}"
+
+    zip_filename="../${repo_name}-${ref_name}-${timestamp}.git-hoard.zip"
+    for file in "${files[@]}" ; do
+        echo "${file}"
+    done | zip "${zip_filename}" --names-stdin
+    echo "Created ${zip_filename}"
+
+    echo "${files[@]}" | xargs rm -v
+}
+main "$@"
