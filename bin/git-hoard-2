@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -o errexit
+set -o pipefail
+set -o nounset
+shopt -s lastpipe
+main () {
+    timestamp="$(date +%s%N)"
+    timestamp="${timestamp:0:-6}"
+    git_hoard_dir="git-hoard/${timestamp}"
+
+    root="$(command git rev-parse --show-toplevel)"
+    cd "${root}"
+    if grep -q -F -x /git-hoard/ .git/info/exclude ; then
+        :
+    else
+        echo /git-hoard/ >> .git/info/exclude
+    fi
+    declare -a files
+    git ls-files --others --exclude-standard | readarray -t files
+    if (( !${#files[@]} )) ; then
+        echo "git-hoard-2: No untracked files; exiting."
+        exit 0
+    fi
+    mkdir -p "${git_hoard_dir}"
+    for file in "${files[@]}" ; do
+        dest="${git_hoard_dir}/${file}"
+        mkdir -p "$(dirname "${dest}")"
+        mv "${file}" "${dest}"
+    done
+}
